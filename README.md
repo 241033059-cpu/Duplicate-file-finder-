@@ -1,2 +1,2 @@
-# File-change-detector-
+# duplicate-file-finder-
 find files with identical content in a directory using size grouping...
