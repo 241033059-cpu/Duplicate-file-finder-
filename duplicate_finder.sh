@@ -1,49 +1,107 @@
-#!/bin/bash
-# ---------------------------------------------
-# Basic Duplicate File Finder
+ #!/bin/bash
+# ---------------------------------------------------
+# MENU-DRIVEN DUPLICATE FILE FINDER
 # Name: Komal
-# ---------------------------------------------
+# ---------------------------------------------------
 
-echo "Enter the directory path to scan for duplicates:"
-read dir
+# Function to find original files (first occurrence of each hash)
+find_originals() {
+    dir="."
+    echo
+    echo "---------------------------------------------------"
+    echo "               ORIGINAL FILES FINDER"
+    echo "---------------------------------------------------"
+    echo "Scanning current directory: $(pwd)"
+    echo "Please wait..."
+    echo
 
-# Check if directory exists
-if [ ! -d "$dir" ]; then
-    echo "Error: Directory not found!"
-    exit 1
-fi
+    temp_file=$(mktemp)
 
-echo
-echo "---------------------------------------------"
-echo "     DUPLICATE FILE FINDER - BASIC VERSION"
-echo "---------------------------------------------"
-echo
-echo "Scanning directory: $dir"
-echo "Please wait..."
-echo
+    # Skip .git folder while scanning
+    find "$dir" -type f ! -path "./.git/*" -exec md5sum {} \; > "$temp_file"
 
-# Create a temporary file to store checksums
-temp_file=$(mktemp)
-find "$dir" -type f -exec md5sum {} + > "$temp_file"
+    echo "Original Files:"
+    echo "---------------------------------------------------"
+    awk '!seen[$1]++ {print $2}' "$temp_file"
+    echo
+    echo "---------------------------------------------------"
+    echo "Original file scan complete!"
+    echo "---------------------------------------------------"
+    rm "$temp_file"
+}
 
-echo "Original Files:"
-echo "---------------------------------------------"
+# Function to find duplicate files
+find_duplicates() {
+    dir="."
+    echo
+    echo "---------------------------------------------------"
+    echo "               DUPLICATE FILES FINDER"
+    echo "---------------------------------------------------"
+    echo "Scanning current directory: $(pwd)"
+    echo "Please wait..."
+    echo
 
-# Print the first occurrence of each hash (original files)
-awk '!seen[$1]++ {print $2}' "$temp_file"
+    temp_file=$(mktemp)
 
-echo
-echo "Duplicate Files:"
-echo "---------------------------------------------"
+    # Skip .git folder while scanning
+    find "$dir" -type f ! -path "./.git/*" -exec md5sum {} \; > "$temp_file"
 
-# Print repeated hashes (duplicate files)
-awk 'seen[$1]++ {print $2}' "$temp_file"
+    echo "Duplicate Files:"
+    echo "---------------------------------------------------"
+    awk 'seen[$1]++ {print $2}' "$temp_file"
+    echo
+    echo "---------------------------------------------------"
+    echo "Duplicate file scan complete!"
+    echo "---------------------------------------------------"
+    rm "$temp_file"
+}
 
-echo
-echo "---------------------------------------------"
-echo "Scan complete. Thank you for using the script!"
-echo "---------------------------------------------"
+# Function to show about info
+about_project() {
+    echo
+    echo "---------------------------------------------------"
+    echo "                  ABOUT THE PROJECT"
+    echo "---------------------------------------------------"
+    echo "Project : Duplicate File Finder"
+    echo "Name    : Komal"
+    echo "Version : Basic Menu-Driven (Auto Directory)"
+    echo
+    echo "Description:"
+    echo "This script scans the current working directory"
+    echo "for duplicate files using MD5 checksums."
+    echo "---------------------------------------------------"
+}
 
-# Remove the temporary file
-rm "$temp_file"
+# Function to display the main menu
+show_menu() {
+    echo
+    echo "---------------------------------------------------"
+    echo "               DUPLICATE FILE FINDER MENU"
+    echo "---------------------------------------------------"
+    echo "1. Find Original Files"
+    echo "2. Find Duplicate Files"
+    echo "3. About the Project"
+    echo "4. Exit"
+    echo "---------------------------------------------------"
+}
 
+# Main loop
+while true; do
+    show_menu
+    echo -n "Enter your choice [1-4]: "
+    read choice
+
+    case $choice in
+        1) find_originals ;;
+        2) find_duplicates ;;
+        3) about_project ;;
+        4)
+            echo " Goodbye!..."
+            echo
+            exit 0
+            ;;
+        *)
+            echo "Invalid option! Please try again."
+            ;;
+    esac
+done
